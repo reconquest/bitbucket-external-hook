@@ -78,6 +78,17 @@ func (api *API) EnableHook(key string) error {
 	return err
 }
 
+func (api *API) DisableHook(key string) error {
+	_, err := request(
+		"DELETE",
+		api.Res("settings").
+			Res("hooks").Res(key).
+			Res("enabled", &Hook{}),
+	)
+
+	return err
+}
+
 func (api *API) SetHookSettings(key string, settings *HookSettings) error {
 	_, err := request(
 		"PUT",

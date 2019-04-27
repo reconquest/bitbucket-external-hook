@@ -15,6 +15,8 @@ var (
 
 Usage:
   bitbucket-external-hook [options] print -b <bitbucket-uri> -p <project> [-r <repo>] -k <hook>
+  bitbucket-external-hook [options] enable -b <bitbucket-uri> -p <project> [-r <repo>] -k <hook>
+  bitbucket-external-hook [options] disable -b <bitbucket-uri> -p <project> [-r <repo>] -k <hook>
   bitbucket-external-hook [options] list -b <bitbucket-uri> -p <project> [-r <repo>]
   bitbucket-external-hook -h | --help
   bitbucket-external-hook --version
@@ -41,6 +43,8 @@ type (
 		OnlyConfigured bool
 		Print          bool
 		List           bool
+		Enable         bool
+		Disable        bool
 	}
 )
 
@@ -68,12 +72,39 @@ func main() {
 		err = handleList(api, opts)
 	case opts.Print:
 		err = handlePrint(api, opts)
-
+	case opts.Enable:
+		err = handleEnable(api, opts)
+	case opts.Disable:
+		err = handleDisable(api, opts)
 	}
 
 	if err != nil {
 		log.Fatal(err)
 	}
+}
+
+func handleEnable(api *API, opts Options) error {
+	err := api.EnableHook(opts.Hook)
+	if err != nil {
+		return karma.Format(
+			err,
+			"unable to enable hook",
+		)
+	}
+
+	return nil
+}
+
+func handleDisable(api *API, opts Options) error {
+	err := api.DisableHook(opts.Hook)
+	if err != nil {
+		return karma.Format(
+			err,
+			"unable to enable hook",
+		)
+	}
+
+	return nil
 }
 
 func handlePrint(api *API, opts Options) error {

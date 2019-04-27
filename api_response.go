@@ -11,7 +11,7 @@ type HookSettings struct {
 }
 
 type ResponseHooks struct {
-	Values []Hook
+	Values []*Hook
 }
 
 type Hook struct {

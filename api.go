@@ -26,7 +26,7 @@ func NewAPI(remote *Remote) *API {
 	return api
 }
 
-func (api *API) GetHook(key string) (*HookSettings, error) {
+func (api *API) GetHookSettings(key string) (*HookSettings, error) {
 	response, err := request(
 		"GET",
 		api.Res("settings").
@@ -40,7 +40,7 @@ func (api *API) GetHook(key string) (*HookSettings, error) {
 	return response.(*HookSettings), nil
 }
 
-func (api *API) GetHooks() ([]Hook, error) {
+func (api *API) GetHooks() ([]*Hook, error) {
 	response, err := request(
 		"GET",
 		api.Res("settings").
@@ -53,18 +53,18 @@ func (api *API) GetHooks() ([]Hook, error) {
 	return response.(*ResponseHooks).Values, nil
 }
 
-func (api *API) IsHookEnabled(key string) (bool, error) {
+func (api *API) GetHook(key string) (*Hook, error) {
 	rawResponse, err := request(
 		"GET",
 		api.Res("settings").
 			Res("hooks").Res(key, &Hook{}),
 	)
 	if err != nil {
-		return false, err
+		return nil, err
 	}
 
 	response := rawResponse.(*Hook)
-	return response.Enabled, nil
+	return response, nil
 }
 
 func (api *API) EnableHook(key string) error {

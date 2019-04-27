@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"sort"
+	"strings"
 
 	"github.com/docopt/docopt-go"
 	"github.com/reconquest/karma-go"
@@ -32,14 +33,14 @@ Options:
 
 type (
 	Options struct {
-		BitbucketURI string `docopt:"-b"`
-		Project      string `docopt:"-p"`
-		Repository   string `docopt:"-r"`
-		Hook         string `docopt:"-k"`
-		OnlyEnabled bool
+		BitbucketURI   string `docopt:"-b"`
+		Project        string `docopt:"-p"`
+		Repository     string `docopt:"-r"`
+		Hook           string `docopt:"-k"`
+		OnlyEnabled    bool
 		OnlyConfigured bool
-		Print        bool
-		List         bool
+		Print          bool
+		List           bool
 	}
 )
 
@@ -65,11 +66,51 @@ func main() {
 	switch {
 	case opts.List:
 		err = handleList(api, opts)
+	case opts.Print:
+		err = handlePrint(api, opts)
+
 	}
 
 	if err != nil {
 		log.Fatal(err)
 	}
+}
+
+func handlePrint(api *API, opts Options) error {
+	hook, err := api.GetHook(opts.Hook)
+	if err != nil {
+		return karma.Format(
+			err,
+			"unable to get hook",
+		)
+	}
+
+	printHook(hook)
+
+	if !hook.Configured && !hook.Enabled {
+		return nil
+	}
+
+	settings, err := api.GetHookSettings(opts.Hook)
+	if err != nil {
+		return karma.Format(
+			err,
+			"unable to get hook settings",
+		)
+	}
+
+	fmt.Println()
+	fmt.Printf("Executable: %v\n", settings.Exe)
+	fmt.Printf("SafePath: %v\n", settings.SafePath)
+
+	paramsPrefix := "Params: "
+	fmt.Printf(
+		"%v%v\n",
+		paramsPrefix,
+		strings.ReplaceAll(settings.Params, "\n", "\n"+strings.Repeat(" ", len(paramsPrefix))),
+	)
+
+	return nil
 }
 
 func handleList(api *API, opts Options) error {
@@ -85,28 +126,32 @@ func handleList(api *API, opts Options) error {
 		return hooks[i].Details.Key < hooks[j].Details.Key
 	})
 
-	i := 0
+	id := 0
 	for _, hook := range hooks {
 		if opts.OnlyEnabled && !hook.Enabled {
 			continue
 		}
-		if opts.OnlyConfigured   && !hook.Configured {
+		if opts.OnlyConfigured && !hook.Configured {
 			continue
 		}
 
-		if i > 0 {
+		if id > 0 {
 			fmt.Println()
 		}
-		i++
+		id++
 
-		fmt.Printf("Key: %v\n", hook.Details.Key)
-		fmt.Printf("Name: %v\n", hook.Details.Name)
-		fmt.Printf("Type: %v\n", hook.Details.Type)
-		fmt.Printf("Version: %v\n", hook.Details.Version)
-		fmt.Printf("Scope: %v\n", hook.Scope.Type)
-		fmt.Printf("Configured: %v\n",  hook.Configured)
-		fmt.Printf("Enabled: %v\n",  hook.Enabled)
+		printHook(hook)
 	}
 
 	return nil
+}
+
+func printHook(hook *Hook) {
+	fmt.Printf("Key: %v\n", hook.Details.Key)
+	fmt.Printf("Name: %v\n", hook.Details.Name)
+	fmt.Printf("Type: %v\n", hook.Details.Type)
+	fmt.Printf("Version: %v\n", hook.Details.Version)
+	fmt.Printf("Scope: %v\n", hook.Scope.Type)
+	fmt.Printf("Configured: %v\n", hook.Configured)
+	fmt.Printf("Enabled: %v\n", hook.Enabled)
 }

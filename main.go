@@ -14,37 +14,48 @@ var (
 	usage   = "bitbucket-external-hook " + version + `
 
 Usage:
-  bitbucket-external-hook [options] print -b <bitbucket-uri> -p <project> [-r <repo>] -k <hook>
-  bitbucket-external-hook [options] enable -b <bitbucket-uri> -p <project> [-r <repo>] -k <hook>
-  bitbucket-external-hook [options] disable -b <bitbucket-uri> -p <project> [-r <repo>] -k <hook>
   bitbucket-external-hook [options] list -b <bitbucket-uri> -p <project> [-r <repo>]
+  bitbucket-external-hook [options] print -b <bitbucket-uri> -p <project> [-r <repo>] <hook>
+  bitbucket-external-hook [options] enable -b <bitbucket-uri> -p <project> [-r <repo>] <hook>
+  bitbucket-external-hook [options] disable -b <bitbucket-uri> -p <project> [-r <repo>] <hook>
+  bitbucket-external-hook [options] set -b <bitbucket-uri> -p <project> [-r <repo>] <hook> [-e <path>] [-s] [<param>...]
   bitbucket-external-hook -h | --help
   bitbucket-external-hook --version
 
 Options:
-  -b <bitbucket-uri>    URI to Bitbucket, can include auth info.
-  -p <project>          Slug of project.
-  -r <repository>       Slug of repository.
-  -k <hook>             Hook key.           
-  -h --help             Show this screen.
-  -e --only-enabled     Show only enabled hooks.
-  -c --only-configured  Show only configured hooks.
-  --version             Show version.
+  -b <bitbucket-uri>      URI to Bitbucket, can include auth info.
+  -p <project>            Slug of project.
+  -r <repository>         Slug of repository.
+  <hook>                  Hook key.           
+  -h --help               Show this screen.
+  -o --only-enabled       Show only enabled hooks.
+  -c --only-configured    Show only configured hooks.
+  -e --executable <path>  Set hook executable.
+  -s --safepath           Look in safe path.
+  <param>                 Use param for hook.
+  --version               Show version.
 `
 )
 
 type (
 	Options struct {
-		BitbucketURI   string `docopt:"-b"`
-		Project        string `docopt:"-p"`
-		Repository     string `docopt:"-r"`
-		Hook           string `docopt:"-k"`
+		BitbucketURI string `docopt:"-b"`
+		Project      string `docopt:"-p"`
+		Repository   string `docopt:"-r"`
+		Hook         string `docopt:"<hook>"`
+
+		List           bool
 		OnlyEnabled    bool
 		OnlyConfigured bool
-		Print          bool
-		List           bool
-		Enable         bool
-		Disable        bool
+
+		Print   bool
+		Enable  bool
+		Disable bool
+
+		Set        bool
+		Executable string
+		SafePath   bool     `docopt:"--safepath"`
+		Params     []string `docopt:"<param>"`
 	}
 )
 
@@ -76,11 +87,33 @@ func main() {
 		err = handleEnable(api, opts)
 	case opts.Disable:
 		err = handleDisable(api, opts)
+	case opts.Set:
+		err = handleSet(api, opts)
 	}
 
 	if err != nil {
 		log.Fatal(err)
 	}
+}
+
+func handleSet(api *API, opts Options) error {
+	settings := &HookSettings{
+		Exe:      opts.Executable,
+		SafePath: opts.SafePath,
+		Params:   strings.Join(opts.Params, "\n"),
+	}
+
+	err := api.SetHookSettings(opts.Hook, settings)
+	if err != nil {
+		return karma.Format(
+			err,
+			"unable to set hook settings",
+		)
+	}
+
+	printHookSettings(settings)
+
+	return nil
 }
 
 func handleEnable(api *API, opts Options) error {
@@ -131,15 +164,8 @@ func handlePrint(api *API, opts Options) error {
 	}
 
 	fmt.Println()
-	fmt.Printf("Executable: %v\n", settings.Exe)
-	fmt.Printf("SafePath: %v\n", settings.SafePath)
 
-	paramsPrefix := "Params: "
-	fmt.Printf(
-		"%v%v\n",
-		paramsPrefix,
-		strings.ReplaceAll(settings.Params, "\n", "\n"+strings.Repeat(" ", len(paramsPrefix))),
-	)
+	printHookSettings(settings)
 
 	return nil
 }
@@ -185,4 +211,16 @@ func printHook(hook *Hook) {
 	fmt.Printf("Scope: %v\n", hook.Scope.Type)
 	fmt.Printf("Configured: %v\n", hook.Configured)
 	fmt.Printf("Enabled: %v\n", hook.Enabled)
+}
+
+func printHookSettings(settings *HookSettings) {
+	fmt.Printf("Executable: %v\n", settings.Exe)
+	fmt.Printf("SafePath: %v\n", settings.SafePath)
+
+	paramsPrefix := "Params: "
+	fmt.Printf(
+		"%v%v\n",
+		paramsPrefix,
+		strings.ReplaceAll(settings.Params, "\n", "\n"+strings.Repeat(" ", len(paramsPrefix))),
+	)
 }

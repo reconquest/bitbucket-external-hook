@@ -24,16 +24,16 @@ Usage:
 
 Options:
   -b <bitbucket-uri>      URI to Bitbucket, can include auth info.
-  -p <project>            Slug of project.
-  -r <repository>         Slug of repository.
-  <hook>                  Hook key.           
-  -h --help               Show this screen.
+  -p <project>            Project key.
+  -r <repository>         Repository key, optional.
+  <hook>                  Hook key (Java thing).
   -o --only-enabled       Show only enabled hooks.
   -c --only-configured    Show only configured hooks.
-  -e --executable <path>  Set hook executable.
-  -s --safepath           Look in safe path.
-  <param>                 Use param for hook.
+  -e --executable <path>  Path to hook executable.
+  -s --safepath           Look for <path> in safe directory (bitbucket home).
+  <param>                 Add param to hook, can be specified multiple times.
   --version               Show version.
+  -h --help               Show this screen.
 `
 )
 

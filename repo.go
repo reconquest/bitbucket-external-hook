@@ -3,6 +3,7 @@ package main
 import (
 	"net/url"
 	"regexp"
+	"strings"
 )
 
 var (
@@ -14,6 +15,7 @@ var (
 type Remote struct {
 	scheme      string
 	host        string
+	path        string
 	project     string
 	projectType string
 	repo        string
@@ -42,12 +44,13 @@ func GetRemote(opts Options) (*Remote, error) {
 		repo:        opts.Repository,
 		user:        user,
 		pass:        pass,
+		path:        strings.TrimSuffix(uri.Path, "/"),
 	}
 
 	return remote, nil
 }
 
-func getRepoWebURL(host, project, projectType, repo string) string {
-	return "http://" + host + "/" +
+func getRepoWebURL(host, path, project, projectType, repo string) string {
+	return "http://" + host + path + "/" +
 		projectType + "/" + project + "/repos/" + repo
 }

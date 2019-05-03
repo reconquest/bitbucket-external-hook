@@ -8,7 +8,7 @@ type API struct {
 }
 
 func NewAPI(remote *Remote) *API {
-	url := remote.scheme + "://" + remote.host + "/rest/api/1.0" +
+	url := remote.scheme + "://" + remote.host + remote.path + "/rest/api/1.0" +
 		"/" + remote.projectType + "/" + remote.project
 
 	if remote.repo != "" {

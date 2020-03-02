@@ -23,7 +23,7 @@ type Hook struct {
 	} `json:"details"`
 	Configured bool `json:"configured"`
 	Enabled    bool `json:"enabled"`
-	Scope struct {
+	Scope      struct {
 		Type string `json:"type"`
 	} `json:"scope"`
 }

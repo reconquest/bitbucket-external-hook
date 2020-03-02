@@ -100,7 +100,7 @@ func handleSet(api *API, opts Options) error {
 	settings := &HookSettings{
 		Exe:      opts.Executable,
 		SafePath: opts.SafePath,
-		Params:   strings.Join(opts.Params, "\n"),
+		Params:   strings.Join(opts.Params, "\r\n"),
 	}
 
 	err := api.SetHookSettings(opts.Hook, settings)

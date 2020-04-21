@@ -18,6 +18,4 @@ func init() {
 	)
 
 	log = cog.NewLogger(stderr)
-
-	log.SetLevel(lorg.LevelDebug)
 }

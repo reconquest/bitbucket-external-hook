@@ -7,7 +7,7 @@ import (
 	"net/url"
 
 	"github.com/bndr/gopencils"
-	"github.com/reconquest/hierr-go"
+	"github.com/reconquest/karma-go"
 )
 
 func request(
@@ -21,8 +21,6 @@ func request(
 				queryValues.Set(key, value)
 			}
 			uri += "?" + queryValues.Encode()
-
-			options = options[:len(options)-1]
 		}
 	}
 
@@ -52,7 +50,7 @@ func request(
 	}
 
 	if err != nil {
-		return nil, hierr.Errorf(err, "can't request %s %s", method, uri)
+		return nil, karma.Format(err, "can't request %s %s", method, uri)
 	}
 
 	return request.Response, nil
@@ -68,8 +66,8 @@ func extractRequestError(request *gopencils.Resource, err error) error {
 
 	responseBody, err := ioutil.ReadAll(request.Raw.Body)
 	if err != nil {
-		return hierr.Errorf(
-			hierr.Errorf(err, "can't read response body"),
+		return karma.Format(
+			karma.Format(err, "can't read response body"),
 			unexpectedStatusCode,
 		)
 	}
@@ -79,15 +77,15 @@ func extractRequestError(request *gopencils.Resource, err error) error {
 	err = json.Unmarshal(responseBody, &responseError)
 
 	if len(responseError.Errors) > 0 {
-		return hierr.Errorf(
+		return karma.Format(
 			responseError.String(),
 			unexpectedStatusCode,
 		)
 	}
 
 	if err != nil {
-		return hierr.Errorf(
-			hierr.Errorf(
+		return karma.Format(
+			karma.Format(
 				string(responseBody),
 				"can't decode JSON",
 			),
@@ -97,5 +95,5 @@ func extractRequestError(request *gopencils.Resource, err error) error {
 
 	// response is JSON, but not ResponseError (or empty message with
 	// Java exception), should return as is
-	return hierr.Errorf(string(responseBody), unexpectedStatusCode)
+	return karma.Format(string(responseBody), unexpectedStatusCode)
 }

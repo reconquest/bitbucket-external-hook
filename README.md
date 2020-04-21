@@ -2,9 +2,17 @@
 
 ## Install
 
+You can build the program using `go get`
 ```
-go get github.com/reconquest/bitbucket-external-hook
+go get -v github.com/reconquest/bitbucket-external-hook
 ```
+
+Or you can use GoBinaries.com service to obtain the binary:
+
+```
+curl -sf https://gobinaries.com/reconquest/bitbucket-external-hook | sh
+```
+
 
 ## Usage
 
@@ -14,6 +22,7 @@ bitbucket-external-hook [options] print -b <bitbucket-uri> -p <project> [-r <rep
 bitbucket-external-hook [options] enable -b <bitbucket-uri> -p <project> [-r <repo>] <hook>
 bitbucket-external-hook [options] disable -b <bitbucket-uri> -p <project> [-r <repo>] <hook>
 bitbucket-external-hook [options] set -b <bitbucket-uri> -p <project> [-r <repo>] <hook> [-e <path>] [-s] [<param>...]
+bitbucket-external-hook count -b <bitbucket-uri> [--debug] [<hook>]
 ```
 
 ```
@@ -87,3 +96,17 @@ bitbucket-external-hook set -b http://admin:admin@bitbucket.local:1234 -p hookin
 - `param1` and `param2` are just strings that will be contactenated into one
     string with newlines and sent as `Params` field.
 
+### Measure hooks usage
+
+Print a total number of repositories where hooks are enabled and configured or
+inherited from project level.
+
+```
+bitbucket-external-hook count -b http://admin:admin@bitbucket.local
+```
+
+Also, you can specify a hook prefix:
+
+```
+bitbucket-external-hook count -b http://admin:admin@bitbucket.local com.ngs.stash.externalhooks.external-hooks
+```

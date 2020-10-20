@@ -128,6 +128,16 @@ func (api *API) DisableHook(project, repository, key string) error {
 	return err
 }
 
+func (api *API) InheritHook(project, repository, key string) error {
+	_, err := request(
+		"DELETE",
+		api.sub(project, repository).Res("settings").
+			Res("hooks").Res(key),
+	)
+
+	return err
+}
+
 func (api *API) SetHookSettings(project, repository, key string, settings *HookSettings) error {
 	_, err := request(
 		"PUT",

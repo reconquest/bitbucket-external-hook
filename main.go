@@ -19,6 +19,7 @@ Usage:
   bitbucket-external-hook [options] print -b <bitbucket-uri> -p <project> [-r <repo>] <hook>
   bitbucket-external-hook [options] enable -b <bitbucket-uri> -p <project> [-r <repo>] <hook>
   bitbucket-external-hook [options] disable -b <bitbucket-uri> -p <project> [-r <repo>] <hook>
+  bitbucket-external-hook [options] inherit -b <bitbucket-uri> -p <project> [-r <repo>] <hook>
   bitbucket-external-hook [options] set -b <bitbucket-uri> -p <project> [-r <repo>] <hook> [-e <path>] [-s] [<param>...]
   bitbucket-external-hook count -b <bitbucket-uri> [--debug] [<hook>]
   bitbucket-external-hook -h | --help
@@ -54,6 +55,7 @@ type (
 		Print   bool
 		Enable  bool
 		Disable bool
+		Inherit bool
 
 		Set        bool
 		Executable string
@@ -98,6 +100,8 @@ func main() {
 		err = handleEnable(api, opts)
 	case opts.Disable:
 		err = handleDisable(api, opts)
+	case opts.Inherit:
+		err = handleInherit(api, opts)
 	case opts.Set:
 		err = handleSet(api, opts)
 	case opts.Count:
@@ -143,6 +147,18 @@ func handleEnable(api *API, opts Options) error {
 
 func handleDisable(api *API, opts Options) error {
 	err := api.DisableHook(opts.Project, opts.Repository, opts.Hook)
+	if err != nil {
+		return karma.Format(
+			err,
+			"unable to enable hook",
+		)
+	}
+
+	return nil
+}
+
+func handleInherit(api *API, opts Options) error {
+	err := api.InheritHook(opts.Project, opts.Repository, opts.Hook)
 	if err != nil {
 		return karma.Format(
 			err,
